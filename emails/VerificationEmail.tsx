@@ -8,6 +8,7 @@ import {
   Row,
   Section,
 } from "@react-email/components";
+import * as React from "react";
 
 interface VerificationEmailProps {
   username: string;
