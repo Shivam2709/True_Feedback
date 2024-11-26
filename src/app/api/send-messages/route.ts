@@ -7,8 +7,16 @@ export async function POST(request: Request) {
   await dbConnect();
 
   const { username, content } = await request.json();
+
+  if (!username || !content) {
+    return Response.json(
+      { success: false, message: "Username and content are required" },
+      { status: 400 }
+    );
+  }
   try {
-    const user = await UserModel.findOne({ username });
+    const user = await UserModel.findOne({ username }).exec();
+
     if (!user) {
       return Response.json(
         {

@@ -2,31 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 export { default } from "next-auth/middleware";
 import { getToken } from "next-auth/jwt";
 
-// This function can be marked `async` if using `await` inside
+export const config = {
+  matcher: ["/dashboard/:path*", "/sign-in", "/sign-up", "/", "/verify/:path*"],
+};
+
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
-  console.log("token", token);
-
   const url = request.nextUrl;
 
-  if (
-    token &&
-    (url.pathname.startsWith("/sign-in") ||
+  // If the user is authenticated
+  if (token) {
+    // Prevent authenticated users from accessing auth-related pages
+    if (
+      url.pathname.startsWith("/sign-in") ||
       url.pathname.startsWith("/sign-up") ||
       url.pathname.startsWith("/verify") ||
-      url.pathname.startsWith("/"))
-  ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+      url.pathname === "/"
+    ) {
+      if (url.pathname !== "/dashboard") {
+        // Redirect to the dashboard only if not already on /dashboard
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
   }
 
-  if (!token && url.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  // If the user is not authenticated
+  if (!token) {
+    // Redirect unauthenticated users away from protected routes
+    if (url.pathname.startsWith("/dashboard")) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
   }
 
+  // Allow access to other routes
   return NextResponse.next();
 }
-
-// See "Matching Paths" below to learn more
-export const config = {
-  matcher: ["/sign-in", "/sign-up", "/", "/dashboard/:path*", "/verify/:path*"],
-};

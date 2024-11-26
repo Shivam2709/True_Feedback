@@ -8,6 +8,10 @@ export async function sendVerificationEmail(
   verifyCode: string
 ): Promise<ApiResponse> {
   try {
+    if (!email || !email.includes("@")) {
+      return { success: false, message: "Invalid email address" };
+    }
+
     await resend.emails.send({
       from: "truefeedback@resend.dev",
       to: email,
@@ -15,9 +19,12 @@ export async function sendVerificationEmail(
       react: VerificationEmail({ username, otp: verifyCode }),
     });
 
-    return { success: true, message: "verification email send successfully" };
+    return { success: true, message: "Verification email sent successfully" };
   } catch (emailError) {
-    console.error("Error sending verification email", emailError);
+    console.error(
+      "Error sending verification email",
+      error.response?.data || emailError
+    );
     return { success: false, message: "Failed to send verification email" };
   }
 }

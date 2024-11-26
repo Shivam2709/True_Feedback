@@ -1,4 +1,5 @@
 "use client";
+
 import { MessageCard } from "@/components/messageCard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -10,7 +11,6 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
 import { Loader2, RefreshCcw } from "lucide-react";
-import { User } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,6 +34,8 @@ const DashboardPage = () => {
   const { register, watch, setValue } = from;
 
   const acceptMessages = watch("acceptMessage");
+
+  const username = session?.user?.username;
 
   const fetchAcceptMessage = useCallback(async () => {
     setIsSwitchLoading(true);
@@ -110,7 +112,6 @@ const DashboardPage = () => {
     }
   };
 
-  const { username } = session?.user as User;
   //TODO: do more reserch.
   const baseUrl = `${window.location.protocol}//${window.location.host}`;
   const profileUrl = `${baseUrl}/u/${username}`;
@@ -123,7 +124,7 @@ const DashboardPage = () => {
     });
   };
 
-  if (!session || !session.user) {
+  if (!session || !session.user || !username) {
     return <div>Please login</div>;
   }
 
@@ -173,7 +174,7 @@ const DashboardPage = () => {
         {messages.length > 0 ? (
           messages.map((message, index) => (
             <MessageCard
-              key={message._id}
+              key={index}
               message={message}
               onMessageDelete={handleDeleteMessage}
             />
